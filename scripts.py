@@ -6,11 +6,6 @@ import sys
 import django
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
-django.setup()
-from datacenter.models import (Chastisement, Commendation, Lesson, Mark,
-                               Schoolkid)
-
 
 def fix_marks(schoolkid):
     marks = Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3])
@@ -58,59 +53,59 @@ def create_parser():
         description=f'Команды, которые должны быть переданы '
                     f'в качестве первого параметра %(prog)s'
     )
-    mark_parser=subparsers.add_parser(
+    mark_parser = subparsers.add_parser(
         'mark',
-        help = 'Исправить плохие оценки',
-        description = 'Находит плохие оценки и исправляет на 5ки'
+        help='Исправить плохие оценки',
+        description='Находит плохие оценки и исправляет на 5ки'
     )
     mark_parser.add_argument(
         '-n',
         '--name',
-        nargs = '+',
-        required = True,
-        help = 'Фамилия Имя'
+        nargs='+',
+        required=True,
+        help='Фамилия Имя'
     )
-    amnesty_parser=subparsers.add_parser(
+    amnesty_parser = subparsers.add_parser(
         'amnesty',
-        help = 'Удалить замечания',
-        description = 'Удаляет плохие замечания учителей'
+        help='Удалить замечания',
+        description='Удаляет плохие замечания учителей'
     )
     amnesty_parser.add_argument(
         '-n',
         '--name',
-        nargs = '+',
-        required = True,
-        help = 'Фамилия Имя'
+        nargs='+',
+        required=True,
+        help='Фамилия Имя'
     )
-    praise_parser=subparsers.add_parser(
+    praise_parser = subparsers.add_parser(
         'praise',
-        help = 'Похвалить себя',
-        description = 'Добавить хвалебную запись по указанному предмету'
+        help='Похвалить себя',
+        description='Добавить хвалебную запись по указанному предмету'
     )
     praise_parser.add_argument(
         '-n',
-        '--name', 
-        nargs = '+',
-        required = True,
-        help = 'Фамилия Имя'
-        )
+        '--name',
+        nargs='+',
+        required=True,
+        help='Фамилия Имя'
+    )
     praise_parser.add_argument(
         '-s',
         '--subject',
-        required = True
+        required=True
     )
     return parser
 
 
 def main():
-    parser=create_parser()
-    namespace=parser.parse_args()
-    name=' '.join(namespace.name)
+    parser = create_parser()
+    namespace = parser.parse_args()
+    name = ' '.join(namespace.name)
     try:
-        child=Schoolkid.objects.get(full_name__contains = name)
+        child = Schoolkid.objects.get(full_name__contains=name)
     except ObjectDoesNotExist:
         print(f'Студент с именем {name} не найден. '
-            f'Проверь правильность имени.')
+              f'Проверь правильность имени.')
         sys.exit()
     except MultipleObjectsReturned:
         print(f'Найдено несколько студентов с именем {name}. Уточни запрос')
@@ -121,13 +116,17 @@ def main():
     elif namespace.command == 'amnesty':
         remove_chastisements(child)
     else:
-        subject=namespace.subject
+        subject = namespace.subject
         try:
             create_commendation(child, subject.title())
         except ObjectDoesNotExist:
             print(f'Предмет "{subject}" не найден. '
-                f'Проверь правильность названия предмета')
+                  f'Проверь правильность названия предмета')
 
 
 if __name__ == '__main__':
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
+    django.setup()
+    from datacenter.models import (Chastisement, Commendation, Lesson, Mark,
+                                   Schoolkid)
     main()
