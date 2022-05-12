@@ -6,6 +6,11 @@ import sys
 import django
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
+django.setup()
+from datacenter.models import (Chastisement, Commendation, Lesson, Mark,
+                               Schoolkid)
+
 
 def fix_marks(schoolkid):
     marks = Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3])
@@ -110,7 +115,6 @@ def main():
     except MultipleObjectsReturned:
         print(f'Найдено несколько студентов с именем {name}. Уточни запрос')
         sys.exit()
-
     if namespace.command == 'mark':
         fix_marks(child)
     elif namespace.command == 'amnesty':
@@ -125,8 +129,4 @@ def main():
 
 
 if __name__ == '__main__':
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
-    django.setup()
-    from datacenter.models import (Chastisement, Commendation, Lesson, Mark,
-                                   Schoolkid)
     main()
